@@ -1,38 +1,39 @@
 package hello.jdbc.service;
 
-import static hello.jdbc.connection.ConnectionConst.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import hello.jdbc.connection.ConnectionConst;
 import hello.jdbc.domain.Member;
 import hello.jdbc.repository.MemberRepositoryV1;
-import java.sql.SQLException;
-import org.assertj.core.api.Assertions;
+import hello.jdbc.repository.MemberRepositoryV2;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.sql.SQLException;
+
+import static hello.jdbc.connection.ConnectionConst.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
- *  기본 동작, 트랜잭션이 없어서 문제 발생
+ * 트랜잭션 - 커넥션 파라미터 전달
  */
-class MemberServiceV1Test {
+class MemberServiceV2Test {
 
     public static final String MEMBER_A = "memberA";
     public static final String MEMBER_B = "memberB";
     public static final String MEMBER_EX = "ex";
 
 
-    private MemberRepositoryV1 memberRepositoryV1;
-    private MemberServiceV1 memberServiceV1;
+    private MemberRepositoryV2 memberRepositoryV1;
+    private MemberServiceV2 memberServiceV1;
 
     @BeforeEach
     void before() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource(URL, USERNAME, PASSWORD);
-         memberRepositoryV1 = new MemberRepositoryV1(dataSource);
-         memberServiceV1 = new MemberServiceV1(memberRepositoryV1);
+        memberRepositoryV1 = new MemberRepositoryV2(dataSource);
+        memberServiceV1 = new MemberServiceV2(dataSource,memberRepositoryV1);
     }
 
     @AfterEach
@@ -74,7 +75,8 @@ class MemberServiceV1Test {
         Member findMemberA = memberRepositoryV1.findById(memberA.getMemberId());
         Member findMemberB = memberRepositoryV1.findById(memberEx.getMemberId());
 
-        assertThat(findMemberA.getMoney()).isEqualTo(8000);
+        assertThat(findMemberA.getMoney()).isEqualTo(10000); // 롤백 되어서 10000으로 돌아감
         assertThat(findMemberB.getMoney()).isEqualTo(10000);
     }
+
 }
